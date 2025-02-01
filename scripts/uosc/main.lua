@@ -1,5 +1,5 @@
 --[[ uosc | https://github.com/tomasklaen/uosc ]]
-local uosc_version = '5.6.2'
+local uosc_version = '5.7.0'
 
 mp.commandv('script-message', 'uosc-version', uosc_version)
 
@@ -101,6 +101,7 @@ defaults = {
 	chapter_ranges = 'openings:30abf964,endings:30abf964,ads:c54e4e80',
 	chapter_range_patterns = 'openings:オープニング;endings:エンディング',
 	languages = 'slang,en',
+	subtitles_directory = '~~/subtitles',
 	disable_elements = '',
 	ziggy_path = 'default',
 }
@@ -988,7 +989,7 @@ bind_command('playlist', create_self_updating_menu_opener({
 		local from, to = event.from_index, event.to_index
 		mp.commandv('playlist-move', tostring(from - 1), tostring(to - (to > from and 0 or 1)))
 	end,
-	on_remove = function(event) mp.commandv('playlist-remove', tostring(event.index - 1)) end,
+	on_remove = function(event) mp.commandv('playlist-remove', tostring(event.value - 1)) end,
 }))
 bind_command('chapters', create_self_updating_menu_opener({
 	title = t('Chapters'),
@@ -1131,7 +1132,13 @@ bind_command('paste-to-playlist', function()
 		end
 	end
 end)
-bind_command('copy-to-clipboard', function() set_clipboard(state.path) end)
+bind_command('copy-to-clipboard', function()
+	if state.path then
+		set_clipboard(state.path)
+	else
+		mp.commandv('show-text', t('Nothing to copy'), 3000)
+	end
+end)
 bind_command('open-config-directory', function()
 	local config_path = mp.command_native({'expand-path', '~~/mpv.conf'})
 	local config = serialize_path(normalize_path(config_path))
